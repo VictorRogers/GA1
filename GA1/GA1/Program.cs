@@ -10,8 +10,7 @@ namespace GA1
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello biatch!");
-            Console.ReadKey();
+
         }
     }
 }

@@ -46,7 +46,7 @@
     <Compile Include="Chromosome.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="System.cs" />
+    <Compile Include="GASystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
