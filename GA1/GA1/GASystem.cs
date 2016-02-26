@@ -19,5 +19,40 @@ namespace GA1
         {
         }
 
+        public void PrintGeneSymbol(int val)
+        {
+        }
+
+        public string GetRandomBits(int length)
+        {
+        }
+
+        public int BinToDec(string bits)
+        {
+        }
+
+        public float AssignFitness(string bits, int targetVal)
+        {
+        }
+
+        public void PrintChromosome(string bits)
+        {
+        }
+
+        public void PrintGeneSymbol(int val)
+        {
+        }
+
+        public string Roulette(int totalFitness, Chromosome Population)
+        {
+        }
+
+        public void Mutate(string bits)
+        {
+        }
+
+        public void Crossover(string offspring1, string offspring2)
+        {
+        }
     }
 }
