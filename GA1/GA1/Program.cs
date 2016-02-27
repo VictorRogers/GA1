@@ -10,7 +10,8 @@ namespace GA1
     {
         static void Main(string[] args)
         {
-
+            GASystem GASystem = new GASystem();
+            GASystem.Start();
         }
     }
 }
