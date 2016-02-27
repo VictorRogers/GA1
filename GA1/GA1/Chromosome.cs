@@ -8,12 +8,17 @@ namespace GA1
 {
     class Chromosome 
     {
-        public String bits;
+        public string bits;
         public float fitness;
 
         public Chromosome()
         {
         }
 
+        public Chromosome(string newBits, float newfitness)
+        {
+            bits = newBits;
+            fitness = newfitness;
+        }
     }
 }
