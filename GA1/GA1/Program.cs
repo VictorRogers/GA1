@@ -15,7 +15,7 @@ namespace GA1
             GASystem.chromosomeLength = 300;
             GASystem.crossoverRate = 0.7f;
             GASystem.geneLength = 4;
-            GASystem.maxGenerations = 400;
+            GASystem.maxGenerations = 10000;
             GASystem.mutationRate = 0.001f;
             GASystem.populationSize = 100;
 

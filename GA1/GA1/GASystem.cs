@@ -15,47 +15,67 @@ namespace GA1
         public float mutationRate;
         public int populationSize;
 
+
         public GASystem()
         {
         }
 
+        private static readonly Random random = new Random();
+        private static readonly object syncLock = new object();
+        //Returns a random float between 0 and 1
+        public static float RandomFloat()
+        {
+            lock(syncLock)
+            {
+                return (float)random.NextDouble();
+            }
+        }
+
+
         public float AssignFitness(string bits, float targetVal)
         {
-            //Holds decimal values of gene sequence
-            int[] buffer = new int[(int)(chromosomeLength / geneLength)];
-            int numElements = ParseBits(bits, buffer);
-
-            float result = 0.0f;
-
-            for (int i = 0; i < numElements - 1; i += 2)
+            if (bits != "")
             {
-                switch (buffer[i])
+                //Holds decimal values of gene sequence
+                int[] buffer = new int[(int)(chromosomeLength / geneLength)];
+                int numElements = ParseBits(bits, buffer);
+
+                float result = 0.0f;
+
+                for (int i = 0; i < numElements - 1; i += 2)
                 {
-                    case 10:
-                        result += buffer[i + 1];
-                        break;
+                    switch (buffer[i])
+                    {
+                        case 10:
+                            result += buffer[i + 1];
+                            break;
 
-                    case 11:
-                        result -= buffer[i + 1];
-                        break;
+                        case 11:
+                            result -= buffer[i + 1];
+                            break;
 
-                    case 12:
-                        result *= buffer[i + 1];
-                        break;
+                        case 12:
+                            result *= buffer[i + 1];
+                            break;
 
-                    case 13:
-                        result /= buffer[i + 1];
-                        break;
+                        case 13:
+                            result /= buffer[i + 1];
+                            break;
+                    }
+                }
+
+                if (result == targetVal)
+                {
+                    return 999.0f;
+                }
+                else
+                {
+                    return 1 / (float)Math.Abs((double)(targetVal - result));
                 }
             }
-
-            if (result == targetVal)
+            else //Invalid solution
             {
-                return 999.0f;
-            }
-            else
-            {
-                return 1 / (float)Math.Abs((double)(targetVal - result));
+                return 0;
             }
         }
 
@@ -81,20 +101,21 @@ namespace GA1
         
         public void Crossover(ref string offspring1, ref string offspring2)
         {
-            //Random number probably needs to be done at a higher scope due to seeding issues
-            Random random = new Random();
-            float randomNumber = random.Next(0, 1);
+            //Returns a random float between 0 and 1
+            float randomNumber = RandomFloat();
 
             if (randomNumber < crossoverRate)
             {
                 //Creating a random crossover point
                 int crossover = (int)(randomNumber * chromosomeLength);
 
-                StringBuilder t1 = new StringBuilder(offspring1.Substring(0, crossover) + offspring2.Substring(crossover, chromosomeLength));
-                StringBuilder t2 = new StringBuilder(offspring2.Substring(0, crossover) + offspring2.Substring(crossover, chromosomeLength));
-
-                offspring1 = t1.ToString();
-                offspring2 = t2.ToString();
+                if ((offspring1 != "") && (offspring2 != ""))
+                {
+                    StringBuilder t1 = new StringBuilder(offspring1.Substring(0, crossover) + offspring2.Substring(crossover, chromosomeLength - crossover));
+                    StringBuilder t2 = new StringBuilder(offspring2.Substring(0, crossover) + offspring1.Substring(crossover, chromosomeLength  - crossover));
+                    offspring1 = t1.ToString();
+                    offspring2 = t2.ToString();                
+                }
             }
         }
 
@@ -102,12 +123,11 @@ namespace GA1
         public string GetRandomBits(int length)
         {
             string bits = "";
-            //Random number probably needs to be done at a higher scope due to seeding issues
-            Random random = new Random();
-            float randomNumber = random.Next(0, 1);
 
             for (int i = 0; i < length; i++)
             {
+                //Returns a random float between 0 and 1
+                float randomNumber = RandomFloat();
                 if (randomNumber > 0.5f)
                 {
                     bits += "1";
@@ -124,8 +144,60 @@ namespace GA1
 
         public int ParseBits(string bits, int[] buffer)
         {
-            int a = 1;
-            return a;
+            //Counter for buffer
+            int cBuff = 0;
+            //Determines if looking for an operator or a number
+            bool bOperator = true;
+            //Decimal value of gene currently being tested
+            int thisGene = 0;
+
+            for (int i = 0; i < chromosomeLength; i += geneLength)
+            {
+                //Converts current gene to a decimal
+                thisGene = BinToDec(bits.Substring(i, geneLength));
+
+                //Find a gene which represents an operator
+                if (bOperator)
+                {
+                    if ((thisGene < 10) || (thisGene > 13))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        bOperator = false;
+                        buffer[cBuff++] = thisGene;
+                        continue;
+                    }
+                }
+                
+                else
+                {
+                    if (thisGene > 9)
+                    {
+                        continue;
+                    }
+
+                    else
+                    {
+                        bOperator = true;
+                        buffer[cBuff++] = thisGene;
+                        continue;
+                    }
+                }
+            }//Next gene
+            
+            //Check for a divide by zero in the chromosome
+            //If so, change the / to a +
+            for (int i = 0; i < cBuff; i++)
+            {
+                if ((buffer[i] == 13) && (buffer[i + 1] == 0))
+                {
+                    buffer[i] = 10;
+                }
+            }
+
+            return cBuff;
         }
 
 
@@ -178,9 +250,8 @@ namespace GA1
 
         public string Roulette(float totalFitness, Chromosome[] Population)
         {
-            //Random number probably needs to be done at a higher scope due to seeding issues
-            Random random = new Random();
-            float randomNumber = random.Next(0, (int)Math.Ceiling(totalFitness));
+            //Returns a random float between 0 and 1
+            float randomNumber = RandomFloat();
 
             float fitnessSoFar = 0.0f;
 
@@ -203,9 +274,8 @@ namespace GA1
             StringBuilder sbNewBits = new StringBuilder(bits);
             string newBits;
 
-            //Random number probably needs to be done at a higher scope due to seeding issues
-            Random random = new Random();
-            float randomNumber = random.Next(0, 1);
+            //Returns a random float between 0 and 1
+            float randomNumber = RandomFloat();
 
             for (int i = 0; i < bits.Length; i++)
             {
@@ -234,9 +304,14 @@ namespace GA1
                 //Population of Chromosomes
                 Chromosome[] Population = new Chromosome[populationSize];
 
+                for (int i = 0; i < populationSize; i++)
+                {
+                    Population[i] = new Chromosome();
+                }
+
                 //Target number to reach
                 float target;
-                Console.WriteLine("Input a target number: ");
+                Console.WriteLine("\nInput a target number: ");
                 target = float.Parse(Console.ReadLine());
 
                 //Building a random population with null fitness
@@ -268,7 +343,7 @@ namespace GA1
                     {
                         if (Population[i].fitness == 999.0f)
                         {
-                            Console.WriteLine("\nSolution found in " + GenerationsRequiredToFindASolution + " gnerations.\n\n");
+                            Console.WriteLine("\nSolution found in " + GenerationsRequiredToFindASolution + " generations.\n\n");
                             PrintChromosome(Population[i].bits);
                             bFound = true;
                             i = populationSize;
